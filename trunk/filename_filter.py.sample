@@ -1,0 +1,16 @@
+#!/usr/bin/env python
+# vim:ft=python
+
+def GetFilename(params):
+  if params.has_key("file"):
+    return params["file"]
+
+  if params.has_key("url"):
+    url = params["url"]
+    if url.find("mail") != -1:
+      return "content.eml"
+
+  if params.has_key("ext"):
+    return "file." + params["url"]
+
+  return "file.txt"

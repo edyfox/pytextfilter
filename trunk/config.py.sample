@@ -1,0 +1,16 @@
+#!/usr/bin/env python
+# vim:ft=python
+
+config = {
+  "server": {
+    # The port that the edit server listens at
+    "port": 8888
+  },
+  "environment": {
+    # An array stores the parameters that needed to launch your text editor.
+    # "%s" will be replaced by the filename to be edited.
+    "editor": [ "sensible-editor", "%s" ],
+    # Base directory to store the temporary files.
+    "tmpdir": "/tmp"
+  }
+}
