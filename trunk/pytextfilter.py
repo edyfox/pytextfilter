@@ -66,9 +66,13 @@ class EditServerHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 
   def do_POST(self):
     # Create the temp directory.
-    tempdir = tempfile.mkdtemp(
-        prefix = "edit-server-",
-        dir = config["environment"]["tmpdir"])
+    try:
+      tempdir = tempfile.mkdtemp(
+          prefix = "edit-server-",
+          dir = config["environment"]["tmpdir"])
+    except:
+      self.__error()
+      return
 
     params = {}
 
