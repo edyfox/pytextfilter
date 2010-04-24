@@ -20,6 +20,7 @@ import SocketServer
 import cgi
 import os
 import shutil
+import subprocess
 import tempfile
 
 import filename_filter
@@ -93,7 +94,7 @@ class EditServerHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 
     # Get the temp filename.
     filename = filename_filter.GetFilename(params)
-    filename = filename.replace("/", "").replace("\\", "")
+    filename = filename.replace("/", "").replace("\\", "").replace(os.sep, "")
     tempname =  tempdir + os.sep + filename
 
     # Write the temp file.
@@ -117,7 +118,7 @@ class EditServerHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         params.append(i)
 
     try:
-      os.spawnvp(os.P_WAIT, params[0], params)
+      subprocess.call(params)
     except:
       self.__cleanup(tempdir)
       self.__error()
