@@ -11,6 +11,6 @@ def GetFilename(params):
       return "content.eml"
 
   if params.has_key("ext"):
-    return "file." + params["url"]
+    return "file." + params["ext"]
 
   return "file.txt"
