@@ -155,7 +155,7 @@ class ThreadedHTTPServer(
 def main():
   try:
     server = ThreadedHTTPServer(
-        ("127.0.0.1", config["server"]["port"]),
+        (config["server"]["interface"], config["server"]["port"]),
         EditServerHandler)
     print "Text filter server started..."
     server.serve_forever()
