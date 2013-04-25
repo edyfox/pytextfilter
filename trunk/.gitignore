@@ -1,4 +1,7 @@
 *.pyc
 *.pyo
+.*.sw?
 
+config.py
+filename_filter.py
 resource/pytextfilter.png
