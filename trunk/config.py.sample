@@ -3,6 +3,8 @@
 
 config = {
   "server": {
+    # The interface that the edit server listens at
+    "interface": "127.0.0.1",
     # The port that the edit server listens at
     "port": 8888
   },
