@@ -2,6 +2,6 @@
 *.pyo
 .*.sw?
 
-config.py
-filename_filter.py
-resource/pytextfilter.png
+/config.py
+/filename_filter.py
+/resource/pytextfilter.png
