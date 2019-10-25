@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #
 # Copyright 2010 Edward Leap Fox (edyfox@gmail.com).
 #
@@ -15,9 +15,9 @@
 # limitations under the License.
 #
 
-import BaseHTTPServer
-import SocketServer
-import cgi
+import http.server
+import socketserver
+import urllib.parse
 import os
 import shutil
 import subprocess
@@ -26,7 +26,7 @@ import tempfile
 import filename_filter
 from config import config
 
-class EditServerHandler(BaseHTTPServer.BaseHTTPRequestHandler):
+class EditServerHandler(http.server.BaseHTTPRequestHandler):
   """An HTTP server that handles text filter requests"""
 
   def do_GET(self):
@@ -78,17 +78,17 @@ class EditServerHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     params = {}
 
     # Check x-id and x-url to keep compatible with emacs_chrome.
-    id = self.headers.getheader("x-id")
+    id = self.headers.get("x-id")
     if id != None:
       params["id"] = id
-    url = self.headers.getheader("x-url")
+    url = self.headers.get("x-url")
     if url != None:
       params["url"] = url
 
     # Extract the parameters from the query string.
     query = self.path.split("?", 1)
     if len(query) > 1:
-      qs = cgi.parse_qs(query[1])
+      qs = urllib.parse.parse_qs(query[1])
       for i in qs:
         params[i] = qs[i][-1]
 
@@ -98,13 +98,15 @@ class EditServerHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     tempname =  tempdir + os.sep + filename
 
     # Write the temp file.
+    temp = None
     try:
-      temp = file(tempname, "w")
+      temp = open(tempname, "wb")
       temp.write(
-          self.rfile.read(int(self.headers.getheader("content-length"))))
+          self.rfile.read(int(self.headers.get("content-length"))))
       temp.close()
     except:
-      temp.close()
+      if temp:
+        temp.close()
       self.__cleanup(tempdir)
       self.__error()
       return
@@ -126,7 +128,7 @@ class EditServerHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 
     # Read the edited file.
     try:
-      temp = file(tempname, "r")
+      temp = open(tempname, "rb")
       content = temp.read()
       temp.close()
     except:
@@ -149,7 +151,7 @@ class EditServerHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     self.__cleanup(tempdir)
 
 class ThreadedHTTPServer(
-    SocketServer.ThreadingMixIn, BaseHTTPServer.HTTPServer):
+    socketserver.ThreadingMixIn, http.server.HTTPServer):
   """Handle requests in a separate thread."""
 
 def main():
@@ -157,10 +159,10 @@ def main():
     server = ThreadedHTTPServer(
         (config["server"]["interface"], config["server"]["port"]),
         EditServerHandler)
-    print "Text filter server started..."
+    print("Text filter server started...")
     server.serve_forever()
   except KeyboardInterrupt:
-    print "Shutting down text filter server..."
+    print("Shutting down text filter server...")
     server.socket.close()
 
 if __name__ == "__main__":
