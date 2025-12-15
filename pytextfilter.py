@@ -22,6 +22,7 @@ import os
 import shutil
 import subprocess
 import tempfile
+import hashlib
 
 import filename_filter
 from config import config
@@ -101,8 +102,9 @@ class EditServerHandler(http.server.BaseHTTPRequestHandler):
     temp = None
     try:
       temp = open(tempname, "wb")
-      temp.write(
-          self.rfile.read(int(self.headers.get("content-length"))))
+      content = self.rfile.read(int(self.headers.get("content-length")))
+      original_hash = hashlib.sha256(content).hexdigest()
+      temp.write(content)
       temp.close()
     except:
       if temp:
@@ -141,6 +143,11 @@ class EditServerHandler(http.server.BaseHTTPRequestHandler):
       self.send_response(200)
       self.send_header("Content-type", "text/plain")
       self.send_header("Content-length", len(content))
+      new_hash = hashlib.sha256(content).hexdigest()
+      if original_hash == new_hash:
+        self.send_header("X-File-Changed", "false")
+      else:
+        self.send_header("X-File-Changed", "true")
       self.end_headers()
       self.wfile.write(content)
     except :
