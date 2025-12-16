@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+
+export LANG=C
+
+temp_dir_base="/tmp"
+edit_server="http://localhost:31416"
+
+if [ $# -lt 1 ]; then
+  echo Usage: edit-client filename
+  exit 1
+fi
+
+urlencode() {
+    arg="$1"
+    i="0"
+    while [ "$i" -lt ${#arg} ]; do
+        c=${arg:$i:1}
+        if echo "$c" | grep -q '[-0-9a-zA-Z_.~]'; then
+            echo -n "$c"
+        elif [ "$c" = " " ]; then
+            printf "+"
+        else
+            printf '%%%X' "'$c'"
+        fi
+        i=$((i+1))
+    done
+}
+
+dir=`mktemp -d $temp_dir_base/edit-client-XXXXXX`
+file=`basename "$1"`
+header="$dir/header"
+if curl -sS -D "$header" -o "$dir/$file" \
+    -H 'Content-type: text/plain' \
+    --data-binary @"$1" \
+    "$edit_server/edit?file=$(urlencode "$file")"; then
+  if ! grep -q -i "X-File-Changed: false" "$header"; then
+    cat "$dir/$file" > "$1"
+  fi
+fi
+rm -f "$dir/$file" "$header"
+rmdir "$dir"

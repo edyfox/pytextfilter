@@ -6,7 +6,7 @@ config = {
     # The interface that the edit server listens at
     "interface": "127.0.0.1",
     # The port that the edit server listens at
-    "port": 8888
+    "port": 31416
   },
   "environment": {
     # An array stores the parameters that needed to launch your text editor.
