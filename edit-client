@@ -2,7 +2,7 @@
 
 export LANG=C
 
-temp_dir_base="/tmp"
+temp_dir_base="${XDG_RUNTIME_DIR:-/tmp}"
 edit_server="http://localhost:31416"
 
 if [ $# -lt 1 ]; then
@@ -26,7 +26,7 @@ urlencode() {
     done
 }
 
-dir=`mktemp -d $temp_dir_base/edit-client-XXXXXX`
+dir=`mktemp -d "$temp_dir_base/edit-client-XXXXXX"`
 file=`basename "$1"`
 header="$dir/header"
 if curl -sS -D "$header" -o "$dir/$file" \
