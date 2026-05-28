@@ -2,7 +2,7 @@
 
 export LANG=C
 
-temp_dir_base="${XDG_RUNTIME_DIR:-/tmp}"
+temp_dir_base="${XDG_RUNTIME_DIR:-${TMPDIR:-/tmp}}"
 edit_server="http://localhost:31416"
 
 if [ $# -lt 1 ]; then
