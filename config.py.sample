@@ -6,7 +6,14 @@ config = {
     # The interface that the edit server listens at
     "interface": "127.0.0.1",
     # The port that the edit server listens at
-    "port": 31416
+    "port": 31416,
+    # Browser origins allowed to call this server directly (CORS). Omit the key
+    # and nothing changes: OPTIONS still answers 501 and no CORS header is sent,
+    # which is what a page needs to be refused. Accepted forms:
+    #   True or "*"                  -> allow any origin (echo whatever asked)
+    #   "http://127.0.0.1:8080"      -> one origin
+    #   ["http://127.0.0.1:8080"]    -> an allow-list  <- recommended
+    # "cors": ["http://127.0.0.1:8080"]
   },
   "environment": {
     # An array stores the parameters that needed to launch your text editor.

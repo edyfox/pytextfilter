@@ -30,6 +30,58 @@ from config import config
 class EditServerHandler(http.server.BaseHTTPRequestHandler):
   """An HTTP server that handles text filter requests"""
 
+  # --- jsbarevi CORS begin ---
+  def __allowed_origins(self):
+    """Return the configured allow-list, True for any origin, or None."""
+    try:
+      setting = config["server"].get("cors", False)
+    except Exception:
+      return None
+    if setting is True or setting == "*":
+      return True
+    if isinstance(setting, str):
+      return [setting]
+    if isinstance(setting, (list, tuple, set)):
+      return [o for o in setting if isinstance(o, str)]
+    return None
+
+  def __cors(self):
+    """Send CORS headers when config["server"]["cors"] permits this origin."""
+    allowed = self.__allowed_origins()
+    if not allowed:
+      return
+    origin = self.headers.get("Origin", "")
+    if allowed is True:
+      self.send_header("Access-Control-Allow-Origin", origin or "*")
+    elif origin in allowed:
+      self.send_header("Access-Control-Allow-Origin", origin)
+    else:
+      self.send_header("Vary", "Origin")
+      return
+    self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+    # Every request header the transport can send, or the preflight rejects it: the
+    # token is real (X-Edit-Token) and only appears when a session configures one.
+    self.send_header("Access-Control-Allow-Headers",
+                     "content-type, x-url, x-id, authorization, x-edit-token")
+    self.send_header("Access-Control-Max-Age", "600")
+    self.send_header("Vary", "Origin")
+
+  def do_OPTIONS(self):
+    """Answer the CORS preflight — when CORS is enabled, that is.
+
+    With `cors` unset this answers exactly what the stock server answers (501), so
+    installing the patch on a server nobody configured is a true no-op rather than a
+    subtle behaviour change.
+    """
+    if not self.__allowed_origins():
+      self.send_error(501, "Unsupported method (%r)" % self.command)
+      return
+    self.send_response(204)
+    self.__cors()
+    self.send_header("Content-length", "0")
+    self.end_headers()
+  # --- jsbarevi CORS end ---
+
   def do_GET(self):
     try:
       if self.path.endswith("/favicon.ico"):
@@ -40,6 +92,7 @@ class EditServerHandler(http.server.BaseHTTPRequestHandler):
       else:
         self.send_response(200)
         self.send_header("Content-type", "text/plain")
+        self.__cors()
         self.end_headers()
         self.wfile.write(
             "Server is up and running.  " +
@@ -61,6 +114,7 @@ class EditServerHandler(http.server.BaseHTTPRequestHandler):
       self.send_response(500)
       self.send_header("Content-length", len(content))
       self.send_header("Content-type", "text/plain")
+      self.__cors()
       self.end_headers()
       self.wfile.write(content)
     except:
@@ -142,6 +196,7 @@ class EditServerHandler(http.server.BaseHTTPRequestHandler):
     try:
       self.send_response(200)
       self.send_header("Content-type", "text/plain")
+      self.__cors()
       self.send_header("Content-length", len(content))
       new_hash = hashlib.sha256(content).hexdigest()
       if original_hash == new_hash:

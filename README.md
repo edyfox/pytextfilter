@@ -48,6 +48,39 @@ It is strongly recommended to configure `pytextfilter` to listen **only** on
 `127.0.0.1` (localhost). **Do not** configure it to listen on `0.0.0.0` (all
 interfaces) unless you completely trust the network.
 
+### Browser pages (CORS)
+
+A page in a browser cannot talk to `127.0.0.1:31416` directly, and it is not a
+setting you can flip in the page: the reply is cross-origin, so the browser
+refuses to let the page read it unless the server sends `Access-Control-Allow-*`,
+and a custom header or a JSON body additionally triggers a preflight `OPTIONS`
+request, which `http.server` answers with `501 Unsupported method ('OPTIONS')`.
+
+pyTextFilter now supports this, opt-in and off by default. Add the origins you
+want to allow to `config["server"]["cors"]` (see `config.py.sample`):
+
+```python
+"cors": ["http://127.0.0.1:8080"]
+```
+
+*   Accepted values: `True` or `"*"` (any origin, echoed back), a single origin
+    string, or a list of origins. An origin not in the list gets no
+    `Access-Control-Allow-Origin`, so the browser blocks it.
+*   Leave the key out and **nothing changes**: `OPTIONS` still answers `501` and
+    no CORS header is sent, exactly like the stock server.
+*   The restart matters: `config` is imported once, so a running server keeps the
+    value it started with.
+*   Prefer an allow-list over `True`. "Any origin" means any page you visit can
+    post text to your editor — and this server has no authentication at all.
+
+```bash
+# what the browser asks before a POST, and what it should now get back
+curl -si -X OPTIONS -H 'Origin: http://127.0.0.1:8080' \
+  -H 'Access-Control-Request-Method: POST' \
+  -H 'Access-Control-Request-Headers: content-type' \
+  http://127.0.0.1:31416/ | grep -i access-control
+```
+
 ### Connecting from Remote Linux (SSH)
 Since the server listens on `127.0.0.1`, you need to forward the port so the
 remote client can reach your local machine.
