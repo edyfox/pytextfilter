@@ -13,7 +13,11 @@ config = {
     #   True or "*"                  -> allow any origin (echo whatever asked)
     #   "http://127.0.0.1:8080"      -> one origin
     #   ["http://127.0.0.1:8080"]    -> an allow-list  <- recommended
-    # "cors": ["http://127.0.0.1:8080"]
+    #   ["http://localhost:*"]       -> "*" matches anything inside the origin,
+    #                                   so this is "any port on localhost"
+    # Hosts are not aliased: localhost and 127.0.0.1 are different origins (and on
+    # ChromeOS different network paths), so list each one you use.
+    # "cors": ["http://localhost:*", "http://127.0.0.1:*"]
   },
   "environment": {
     # An array stores the parameters that needed to launch your text editor.

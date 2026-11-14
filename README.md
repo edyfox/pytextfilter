@@ -66,6 +66,14 @@ want to allow to `config["server"]["cors"]` (see `config.py.sample`):
 *   Accepted values: `True` or `"*"` (any origin, echoed back), a single origin
     string, or a list of origins. An origin not in the list gets no
     `Access-Control-Allow-Origin`, so the browser blocks it.
+*   A `*` **inside** an entry matches any run of characters, so
+    `"cors": ["http://localhost:*"]` admits every port on localhost — what a dev
+    server needs, since its port changes per project. A browser omits the default
+    port entirely, and `host:*` admits that form too.
+*   Hosts are **never aliased**. `localhost` and `127.0.0.1` are different origins,
+    and on ChromeOS they can even resolve to different machines (the browser's
+    localhost is not a Linux container's), so list each one you actually use:
+    `["http://localhost:*", "http://127.0.0.1:*"]`.
 *   Leave the key out and **nothing changes**: `OPTIONS` still answers `501` and
     no CORS header is sent, exactly like the stock server.
 *   The restart matters: `config` is imported once, so a running server keeps the
